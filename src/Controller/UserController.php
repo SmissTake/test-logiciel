@@ -16,8 +16,8 @@ class UserController extends AbstractController
      */
     public function index(ManagerRegistry $doctrine): Response
     {
-        $users = $this->$doctrine()->getRepository(User::class)->findAll();
-
+        $users = $doctrine->getRepository(User::class)->findAll();
+    
         return $this->json($users);
     }
 
@@ -45,7 +45,7 @@ class UserController extends AbstractController
         $user->setZipcode($data['zipcode']);
         $user->setTown($data['town']);
 
-        $entityManager = $this->$doctrine()->getManager();
+        $entityManager = $doctrine()->getManager();
         $entityManager->persist($user);
         $entityManager->flush();
 
@@ -66,7 +66,7 @@ class UserController extends AbstractController
         $user->setZipcode($data['zipcode']);
         $user->setTown($data['town']);
 
-        $entityManager = $this->$doctrine()->getManager();
+        $entityManager = $doctrine()->getManager();
         $entityManager->flush();
 
         return $this->json($user);
@@ -77,7 +77,7 @@ class UserController extends AbstractController
      */
     public function delete(ManagerRegistry $doctrine, User $user): Response
     {
-        $entityManager = $this->$doctrine()->getManager();
+        $entityManager = $doctrine()->getManager();
         $entityManager->remove($user);
         $entityManager->flush();
 
