@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\User;
+use App\Repository\UserRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -17,8 +18,10 @@ class UserController extends AbstractController
     public function index(ManagerRegistry $doctrine): Response
     {
         $users = $doctrine->getRepository(User::class)->findAll();
-    
-        return $this->json($users);
+
+        return $this->render('user/search.html.twig', [
+            'users' => $users,
+        ]);
     }
 
 
@@ -28,6 +31,22 @@ class UserController extends AbstractController
     public function show(User $user): Response
     {
         return $this->json($user);
+    }
+
+    /**
+     * @Route("/user/search/{name}", name="user_search", methods={"GET"})
+     */
+    public function search(ManagerRegistry $doctrine, UserRepository $userRepository, $name)
+    {
+        $users = $userRepository->searchUsers($name);
+
+        // Faites quelque chose avec les utilisateurs trouvés, comme les passer à une vue
+
+        return $this->render('user/search.html.twig', [
+            'users' => $users,
+            'searchTerm' => $name,
+        ]);
+
     }
 
     /**

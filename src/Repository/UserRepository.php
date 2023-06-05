@@ -39,6 +39,18 @@ class UserRepository extends ServiceEntityRepository
         }
     }
 
+
+    public function searchUsers($searchTerm)
+    {
+        $queryBuilder = $this->createQueryBuilder('u');
+    
+        $queryBuilder->where('u.userName LIKE :searchTerm')
+            ->setParameter('searchTerm', '%'.$searchTerm.'%');
+    
+        return $queryBuilder->getQuery()->getResult();
+    }
+
+    
 //    /**
 //     * @return User[] Returns an array of User objects
 //     */
