@@ -64,7 +64,7 @@ class UserController extends AbstractController
         $user->setZipcode($data['zipcode']);
         $user->setTown($data['town']);
 
-        $entityManager = $doctrine()->getManager();
+        $entityManager = $doctrine->getManager();
         $entityManager->persist($user);
         $entityManager->flush();
 
@@ -85,21 +85,33 @@ class UserController extends AbstractController
         $user->setZipcode($data['zipcode']);
         $user->setTown($data['town']);
 
-        $entityManager = $doctrine()->getManager();
+        $entityManager = $doctrine->getManager();
         $entityManager->flush();
 
         return $this->json($user);
     }
 
     /**
-     * @Route("/user/{id}", name="user_delete", methods={"DELETE"})
+     * @Route("/user/delete/{id}", name="user_delete", methods={"GET"})
      */
     public function delete(ManagerRegistry $doctrine, User $user): Response
     {
-        $entityManager = $doctrine()->getManager();
+        $entityManager = $doctrine->getManager();
         $entityManager->remove($user);
         $entityManager->flush();
 
         return new Response(null, Response::HTTP_NO_CONTENT);
+    }
+
+    /**
+     * @Route("/backoffice", name="user_backoffice", methods={"GET"})
+     */
+    public function backoffice(ManagerRegistry $doctrine): Response
+    {
+        $users = $doctrine->getRepository(User::class)->findAll();
+
+        return $this->render('backoffice/index.html.twig', [
+            'users' => $users,
+        ]);
     }
 }
