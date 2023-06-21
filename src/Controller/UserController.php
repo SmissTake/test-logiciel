@@ -9,14 +9,42 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Form\Extension\Core\Type\{
+    SubmitType,
+    TextType
+};
 
 class UserController extends AbstractController
 {
-    #[Route('/', name: 'app_user_index', methods: ['GET'])]
-    public function index(UserRepository $userRepository): Response
+    #[Route('/', name: 'app_user_index', methods: ['GET', 'POST'])]
+    public function index(Request $request, UserRepository $userRepository): Response
     {
+        $searchForm = $this->createFormBuilder()
+            ->add('search', TextType::class, [
+                'required' => false,
+                'attr' => [
+                    'placeholder' => 'Search users...',
+                ],
+            ])
+            ->add('submit', SubmitType::class, [
+                'label' => 'Search',
+            ])
+            ->getForm();
+
+        $searchForm->handleRequest($request);
+
+        if ($searchForm->isSubmitted() && $searchForm->isValid()) {
+            $data = $searchForm->getData();
+            $searchTerm = $data['search'];
+
+            $users = $userRepository->searchUsers($searchTerm);
+        } else {
+            $users = $userRepository->findAll();
+        }
+
         return $this->render('user/index.html.twig', [
-            'users' => $userRepository->findAll(),
+            'users' => $users,
+            'searchForm' => $searchForm->createView(),
         ]);
     }
 

@@ -5,6 +5,11 @@
 {% block body %}
     <h1>User index</h1>
 
+    {{ form_start(searchForm) }}
+    {{ form_widget(searchForm.search) }}
+    {{ form_widget(searchForm.submit) }}
+    {{ form_end(searchForm) }}
+
     <table class="table">
         <thead>
             <tr>
