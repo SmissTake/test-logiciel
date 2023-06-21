@@ -3,115 +3,76 @@
 namespace App\Controller;
 
 use App\Entity\User;
+use App\Form\UserType;
 use App\Repository\UserRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\Routing\Annotation\Route;
 
+#[Route('/user')]
 class UserController extends AbstractController
 {
-    /**
-     * @Route("/user", name="user_index", methods={"GET"})
-     */
-    public function index(ManagerRegistry $doctrine): Response
+    #[Route('/', name: 'app_user_index', methods: ['GET'])]
+    public function index(UserRepository $userRepository): Response
     {
-        $users = $doctrine->getRepository(User::class)->findAll();
-
-        return $this->render('user/search.html.twig', [
-            'users' => $users,
+        return $this->render('user/index.html.twig', [
+            'users' => $userRepository->findAll(),
         ]);
     }
 
+    #[Route('/new', name: 'app_user_new', methods: ['GET', 'POST'])]
+    public function new(Request $request, UserRepository $userRepository): Response
+    {
+        $user = new User();
+        $form = $this->createForm(UserType::class, $user);
+        $form->handleRequest($request);
 
-    /**
-     * @Route("/user/{id}", name="user_show", methods={"GET"})
-     */
+        if ($form->isSubmitted() && $form->isValid()) {
+            $userRepository->save($user, true);
+
+            return $this->redirectToRoute('app_user_index', [], Response::HTTP_SEE_OTHER);
+        }
+
+        return $this->renderForm('user/new.html.twig', [
+            'user' => $user,
+            'form' => $form,
+        ]);
+    }
+
+    #[Route('/{id}', name: 'app_user_show', methods: ['GET'])]
     public function show(User $user): Response
     {
-        return $this->json($user);
-    }
-
-    /**
-     * @Route("/user/search/{name}", name="user_search", methods={"GET"})
-     */
-    public function search(ManagerRegistry $doctrine, UserRepository $userRepository, $name)
-    {
-        $users = $userRepository->searchUsers($name);
-
-        // Faites quelque chose avec les utilisateurs trouvés, comme les passer à une vue
-
-        return $this->render('user/search.html.twig', [
-            'users' => $users,
-            'searchTerm' => $name,
+        return $this->render('user/show.html.twig', [
+            'user' => $user,
         ]);
-
     }
 
-    /**
-     * @Route("/user", name="user_create", methods={"POST"})
-     */
-    public function create(ManagerRegistry $doctrine, Request $request): Response
+    #[Route('/{id}/edit', name: 'app_user_edit', methods: ['GET', 'POST'])]
+    public function edit(Request $request, User $user, UserRepository $userRepository): Response
     {
-        $data = json_decode($request->getContent(), true);
+        $form = $this->createForm(UserType::class, $user);
+        $form->handleRequest($request);
 
-        $user = new User();
-        $user->setUserName($data['user_name']);
-        $user->setEmail($data['email']);
-        $user->setBirthdate(new \DateTime($data['birthdate']));
-        $user->setAddress($data['address']);
-        $user->setZipcode($data['zipcode']);
-        $user->setTown($data['town']);
+        if ($form->isSubmitted() && $form->isValid()) {
+            $userRepository->save($user, true);
 
-        $entityManager = $doctrine->getManager();
-        $entityManager->persist($user);
-        $entityManager->flush();
+            return $this->redirectToRoute('app_user_index', [], Response::HTTP_SEE_OTHER);
+        }
 
-        return $this->json($user, Response::HTTP_CREATED);
-    }
-
-    /**
-     * @Route("/user/{id}", name="user_update", methods={"PUT"})
-     */
-    public function update(ManagerRegistry $doctrine, Request $request, User $user): Response
-    {
-        $data = json_decode($request->getContent(), true);
-
-        $user->setUserName($data['user_name']);
-        $user->setEmail($data['email']);
-        $user->setBirthdate(new \DateTime($data['birthdate']));
-        $user->setAddress($data['address']);
-        $user->setZipcode($data['zipcode']);
-        $user->setTown($data['town']);
-
-        $entityManager = $doctrine->getManager();
-        $entityManager->flush();
-
-        return $this->json($user);
-    }
-
-    /**
-     * @Route("/user/delete/{id}", name="user_delete", methods={"GET"})
-     */
-    public function delete(ManagerRegistry $doctrine, User $user): Response
-    {
-        $entityManager = $doctrine->getManager();
-        $entityManager->remove($user);
-        $entityManager->flush();
-
-        return new Response(null, Response::HTTP_NO_CONTENT);
-    }
-
-    /**
-     * @Route("/backoffice", name="user_backoffice", methods={"GET"})
-     */
-    public function backoffice(ManagerRegistry $doctrine): Response
-    {
-        $users = $doctrine->getRepository(User::class)->findAll();
-
-        return $this->render('backoffice/index.html.twig', [
-            'users' => $users,
+        return $this->renderForm('user/edit.html.twig', [
+            'user' => $user,
+            'form' => $form,
         ]);
+    }
+
+    #[Route('/{id}', name: 'app_user_delete', methods: ['POST'])]
+    public function delete(Request $request, User $user, UserRepository $userRepository): Response
+    {
+        if ($this->isCsrfTokenValid('delete'.$user->getId(), $request->request->get('_token'))) {
+            $userRepository->remove($user, true);
+        }
+
+        return $this->redirectToRoute('app_user_index', [], Response::HTTP_SEE_OTHER);
     }
 }
