@@ -1,21 +1,48 @@
 version: '3'
 
 services:
-###> doctrine/doctrine-bundle ###
-  database:
-    image: postgres:${POSTGRES_VERSION:-15}-alpine
-    environment:
-      POSTGRES_DB: ${POSTGRES_DB:-app}
-      # You should definitely change the password in production
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-!ChangeMe!}
-      POSTGRES_USER: ${POSTGRES_USER:-app}
+  php:
+    build:
+      context: .
+      dockerfile: dockerfile
     volumes:
-      - database_data:/var/lib/postgresql/data:rw
-      # You may use a bind-mounted host directory instead, so that it is harder to accidentally remove the volume and lose all your data!
-      # - ./docker/db/data:/var/lib/postgresql/data:rw
-###< doctrine/doctrine-bundle ###
+      - .:/var/www/html
+    ports:
+      - "8001:8000"
+    depends_on:
+      - database
+
+  seeder:
+    build:
+      context: .
+      dockerfile: dockerfile
+    volumes:
+      - .:/var/www/html
+    depends_on:
+      - database
+    command: php bin/console doctrine:fixtures:load --no-interaction
+
+  migration:
+    build:
+      context: .
+      dockerfile: dockerfile
+    volumes:
+      - .:/var/www/html
+    depends_on:
+      - database
+    command: php bin/console doctrine:migrations:migrate --no-interaction
+
+  database:
+    image: mariadb:10.7
+    environment:
+      MARIADB_DATABASE: ${MARIADB_DATABASE:-test_logiciel}
+      MARIADB_USER: ${MARIADB_USER:-test_user}
+      MARIADB_PASSWORD: ${MARIADB_PASSWORD:-test_password}
+      MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD:-root_password}
+    volumes:
+      - database_data:/var/lib/mARIADB
+    ports:
+      - "3307:3306"
 
 volumes:
-###> doctrine/doctrine-bundle ###
   database_data:
-###< doctrine/doctrine-bundle ###
