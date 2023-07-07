@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<ruleset name="Test Logiciel">
+    <description>Test Logiciel</description>
+    <file>src</file>
+    <exclude-pattern>*/Tests/*</exclude-pattern>
+    <rule ref="PSR2"/>
+</ruleset>

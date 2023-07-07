@@ -80,7 +80,8 @@
         ],
         "post-update-cmd": [
             "@auto-scripts"
-        ]
+        ],
+        "lint": "phpcs src"
     },
     "conflict": {
         "symfony/symfony": "*"
@@ -94,10 +95,11 @@
     "require-dev": {
         "doctrine/doctrine-fixtures-bundle": "^3.4",
         "phpunit/phpunit": "^9.5",
+        "squizlabs/php_codesniffer": "^3.7",
         "symfony/browser-kit": "6.3.*",
         "symfony/css-selector": "6.3.*",
         "symfony/debug-bundle": "6.3.*",
-        "symfony/maker-bundle": "^1.48",
+        "symfony/maker-bundle": "^1.49",
         "symfony/phpunit-bridge": "^6.3",
         "symfony/stopwatch": "6.3.*",
         "symfony/web-profiler-bundle": "6.3.*"
